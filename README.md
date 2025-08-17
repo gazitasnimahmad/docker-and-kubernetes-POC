@@ -1,66 +1,60 @@
-# Example Voting App
+# Kubernetes Deployment with Minikube
 
-A simple distributed application running across multiple Docker containers.
+This project demonstrates how to deploy and access applications in a Kubernetes cluster running on **Minikube**.
 
-## Getting started
+---
 
-Download [Docker Desktop](https://www.docker.com/products/docker-desktop) for Mac or Windows. [Docker Compose](https://docs.docker.com/compose) will be automatically installed. On Linux, make sure you have the latest version of [Compose](https://docs.docker.com/compose/install/).
+## 🚀 Steps to Deploy
 
-This solution uses Python, Node.js, .NET, with Redis for messaging and Postgres for storage.
+1. **Apply Kubernetes manifests**
+   ```bash
+   kubectl apply -f .
+   ```
+   This will apply all YAML files in the current directory.
 
-Run in this directory to build and run the app:
+2. **Check nodes**
+   ```bash
+   kubectl get nodes -o wide
+   ```
+   This displays the internal and external IPs of the nodes.
 
-```shell
-docker compose up
+---
+
+## 🌐 Accessing the Application
+
+Since we are using **Minikube** with **Docker as the VM driver**, there are two main ways to access the services:
+
+### 1. Using Node IP & NodePort
+- Get the Minikube IP:
+  ```bash
+  minikube ip
+  ```
+- Combine it with the NodePort exposed in your Service definition:
+  ```
+  http://<minikube-ip>:<node-port>
+  ```
+
+### 2. Using `minikube tunnel`
+- Run:
+  ```bash
+  minikube tunnel
+  ```
+- This will create a tunnel to simulate an external LoadBalancer.
+- Once active, you can access the services via `127.0.0.1:<port>`.
+
+---
+
+## 🔎 Viewing Service URLs
+
+To quickly see the URL for a service:
+```bash
+minikube service <service-name>
 ```
+This will open the service in your default browser.
 
-The `vote` app will be running at [http://localhost:8080](http://localhost:8080), and the `results` will be at [http://localhost:8081](http://localhost:8081).
+---
 
-Alternately, if you want to run it on a [Docker Swarm](https://docs.docker.com/engine/swarm/), first make sure you have a swarm. If you don't, run:
-
-```shell
-docker swarm init
-```
-
-Once you have your swarm, in this directory run:
-
-```shell
-docker stack deploy --compose-file docker-stack.yml vote
-```
-
-## Run the app in Kubernetes
-
-The folder k8s-specifications contains the YAML specifications of the Voting App's services.
-
-Run the following command to create the deployments and services. Note it will create these resources in your current namespace (`default` if you haven't changed it.)
-
-```shell
-kubectl create -f k8s-specifications/
-```
-
-The `vote` web app is then available on port 31000 on each host of the cluster, the `result` web app is available on port 31001.
-
-To remove them, run:
-
-```shell
-kubectl delete -f k8s-specifications/
-```
-
-## Architecture
-
-![Architecture diagram](architecture.excalidraw.png)
-
-* A front-end web app in [Python](/vote) which lets you vote between two options
-* A [Redis](https://hub.docker.com/_/redis/) which collects new votes
-* A [.NET](/worker/) worker which consumes votes and stores them in…
-* A [Postgres](https://hub.docker.com/_/postgres/) database backed by a Docker volume
-* A [Node.js](/result) web app which shows the results of the voting in real time
-
-## Notes
-
-The voting application only accepts one vote per client browser. It does not register additional votes if a vote has already been submitted from a client.
-
-This isn't an example of a properly architected perfectly designed distributed app... it's just a simple
-example of the various types of pieces and languages you might see (queues, persistent data, etc), and how to
-deal with them in Docker at a basic level.
-# docker-and-kubernetes-POC
+## 📌 Notes
+- Use **ClusterIP** services for internal communication (e.g., `db`, `redis`).  
+- Use **NodePort** or **LoadBalancer** for external access (e.g., `vote`, `result`).  
+- The **worker** pod does not need a service since it only processes background jobs.
