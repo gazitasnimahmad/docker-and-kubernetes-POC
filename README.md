@@ -34,11 +34,7 @@ Since we are using **Minikube** with **Docker as the VM driver**, there are two 
   http://<minikube-ip>:<node-port>
   ```
 
-### 2. Using `minikube tunnel`
-- Run:
-  ```bash
-  minikube tunnel
-  ```
+
 - This will create a tunnel to simulate an external LoadBalancer.
 - Once active, you can access the services via `127.0.0.1:<port>`.
 
